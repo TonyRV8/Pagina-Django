@@ -1,0 +1,1028 @@
+{% extends 'base.html' %}
+
+{% block title %}Mi Perfil - {{ usuario.usuario }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        padding: 2rem 0;
+        min-height: calc(100vh - 160px);
+    }
+
+    .profile-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 24px;
+        padding: 2rem;
+        color: white;
+        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -30%;
+        width: 150%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: rotate 25s linear infinite;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(15px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        position: relative;
+        z-index: 1;
+        margin: 0 auto 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .profile-avatar:hover {
+        transform: scale(1.05);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .breadcrumb {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 15px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .breadcrumb-item a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .breadcrumb-item a:hover {
+        color: white;
+    }
+
+    .breadcrumb-item.active {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .profile-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(25px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        box-shadow: var(--shadow-xl);
+        transition: all 0.3s ease;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .profile-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+    }
+
+    .profile-card-header {
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .profile-card-body {
+        padding: 1.5rem;
+    }
+
+    .profile-info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .profile-info-item:last-child {
+        border-bottom: none;
+    }
+
+    .profile-info-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        margin: 0 -1.5rem;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+        border-radius: 10px;
+    }
+
+    .info-label {
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .info-value {
+        color: white;
+        font-weight: 600;
+        text-align: right;
+    }
+
+    .edit-form {
+        background: var(--glass-bg);
+        backdrop-filter: blur(25px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: var(--shadow-xl);
+        display: none;
+        animation: slideInUp 0.4s ease-out;
+    }
+
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        color: white;
+        padding: 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.2);
+        color: white;
+        outline: none;
+    }
+
+    .form-control:disabled {
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.6);
+        cursor: not-allowed;
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .btn-edit {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
+    }
+
+    .btn-edit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(79, 172, 254, 0.4);
+        color: white;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, #2ed573 0%, #1dd1a1 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 25px rgba(46, 213, 115, 0.3);
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(46, 213, 115, 0.4);
+        color: white;
+    }
+
+    .btn-cancel {
+        background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 25px rgba(255, 71, 87, 0.3);
+    }
+
+    .btn-cancel:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(255, 71, 87, 0.4);
+        color: white;
+    }
+
+    .btn-danger-outline {
+        background: transparent;
+        border: 2px solid #ff4757;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        color: #ff4757;
+        transition: all 0.3s ease;
+    }
+
+    .btn-danger-outline:hover {
+        background: #ff4757;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(255, 71, 87, 0.3);
+    }
+
+    .security-section {
+        background: var(--glass-bg);
+        backdrop-filter: blur(25px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: var(--shadow-xl);
+        margin-top: 2rem;
+    }
+
+    .security-item {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .security-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateX(5px);
+    }
+
+    .security-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .status-active {
+        background: linear-gradient(135deg, #2ed573 0%, #1dd1a1 100%);
+        color: white;
+    }
+
+    .status-inactive {
+        background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+        color: white;
+    }
+
+    .status-warning {
+        background: linear-gradient(135deg, #ffa502 0%, #ff6348 100%);
+        color: white;
+    }
+
+    .floating-shapes {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: -1;
+    }
+
+    .shape {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 50%;
+        animation: float 15s ease-in-out infinite;
+    }
+
+    .shape:nth-child(1) {
+        width: 120px;
+        height: 120px;
+        top: 10%;
+        left: 5%;
+        animation-delay: 0s;
+    }
+
+    .shape:nth-child(2) {
+        width: 80px;
+        height: 80px;
+        top: 70%;
+        right: 10%;
+        animation-delay: 5s;
+    }
+
+    .shape:nth-child(3) {
+        width: 150px;
+        height: 150px;
+        bottom: 20%;
+        left: 20%;
+        animation-delay: 10s;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+        33% { transform: translateY(-40px) rotate(120deg) scale(1.1); }
+        66% { transform: translateY(20px) rotate(240deg) scale(0.9); }
+    }
+
+    .activity-timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+
+    .activity-timeline::before {
+        content: '';
+        position: absolute;
+        left: 0.75rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(to bottom, #667eea, #764ba2);
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 2rem;
+        padding-left: 2rem;
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -0.5rem;
+        top: 0.5rem;
+        width: 1rem;
+        height: 1rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        border: 3px solid var(--glass-bg);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+    }
+
+    .timeline-content {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-content {
+        background: var(--glass-bg);
+        backdrop-filter: blur(25px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        color: white;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-footer {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    @media (max-width: 768px) {
+        .profile-container {
+            padding: 1rem 0;
+        }
+        
+        .profile-header {
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+        }
+        
+        .profile-card {
+            margin-bottom: 1.5rem;
+        }
+        
+        .edit-form, .security-section {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="fade-in-up">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'dashboard' %}">
+                        <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                    </a>
+                </li>
+                <li class="breadcrumb-item active">
+                    <i class="fas fa-user me-1"></i>Mi Perfil
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Profile Header -->
+        <div class="profile-header fade-in-up" style="animation-delay: 0.1s;">
+            <div class="row align-items-center">
+                <div class="col-md-3 text-center">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user fa-3x"></i>
+                    </div>
+                    <div class="status-badge status-active">
+                        <i class="fas fa-circle fa-xs"></i>
+                        Cuenta Activa
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h2 class="fw-bold mb-2">{{ usuario.usuario }}</h2>
+                    <p class="mb-1 opacity-75">
+                        <i class="fas fa-envelope me-2"></i>{{ usuario.correo }}
+                    </p>
+                    <p class="mb-0 opacity-75">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Miembro desde {{ usuario.fecha_creacion|date:"F Y" }}
+                    </p>
+                </div>
+                <div class="col-md-3 text-center">
+                    <button class="btn btn-edit" onclick="toggleEditMode()">
+                        <i class="fas fa-edit me-2"></i>Editar Perfil
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Profile Information -->
+            <div class="col-lg-8">
+                <!-- View Mode -->
+                <div id="viewMode" class="profile-card fade-in-up" style="animation-delay: 0.2s;">
+                    <div class="profile-card-header">
+                        <h5 class="text-white fw-bold mb-0">
+                            <i class="fas fa-id-card me-2"></i>
+                            Información Personal
+                        </h5>
+                    </div>
+                    <div class="profile-card-body">
+                        <div class="profile-info-item">
+                            <span class="info-label">
+                                <i class="fas fa-at"></i>
+                                Nombre de Usuario
+                            </span>
+                            <span class="info-value">{{ usuario.usuario }}</span>
+                        </div>
+                        <div class="profile-info-item">
+                            <span class="info-label">
+                                <i class="fas fa-envelope"></i>
+                                Correo Electrónico
+                            </span>
+                            <span class="info-value">{{ usuario.correo }}</span>
+                        </div>
+                        <div class="profile-info-item">
+                            <span class="info-label">
+                                <i class="fas fa-calendar-check"></i>
+                                Fecha de Registro
+                            </span>
+                            <span class="info-value">{{ usuario.fecha_creacion|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        <div class="profile-info-item">
+                            <span class="info-label">
+                                <i class="fas fa-clock"></i>
+                                Hace
+                            </span>
+                            <span class="info-value">{{ usuario.fecha_creacion|timesince }}</span>
+                        </div>
+                        <div class="profile-info-item">
+                            <span class="info-label">
+                                <i class="fas fa-toggle-on"></i>
+                                Estado de Cuenta
+                            </span>
+                            <span class="info-value">
+                                {% if usuario.activo %}
+                                    <span class="status-badge status-active">
+                                        <i class="fas fa-check fa-xs"></i>
+                                        Activa
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">
+                                        <i class="fas fa-times fa-xs"></i>
+                                        Inactiva
+                                    </span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="profile-info-item">
+                            <span class="info-label">
+                                <i class="fas fa-shield-alt"></i>
+                                Nivel de Seguridad
+                            </span>
+                            <span class="info-value">
+                                <span class="status-badge status-active">
+                                    <i class="fas fa-star fa-xs"></i>
+                                    Alto
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Mode -->
+                <div id="editMode" class="edit-form">
+                    <h5 class="text-white fw-bold mb-4">
+                        <i class="fas fa-edit me-2"></i>
+                        Editar Información Personal
+                    </h5>
+                    <form id="profileForm">
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-at me-2"></i>Nombre de Usuario
+                                    </label>
+                                    <input type="text" class="form-control" id="username" 
+                                           value="{{ usuario.usuario }}" disabled>
+                                    <small class="text-white-50">
+                                        El nombre de usuario no se puede modificar
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-envelope me-2"></i>Correo Electrónico
+                                    </label>
+                                    <input type="email" class="form-control" id="email" 
+                                           value="{{ usuario.correo }}" placeholder="Ingresa tu correo">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2 justify-content-end mt-4">
+                            <button type="button" class="btn btn-cancel" onclick="cancelEdit()">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </button>
+                            <button type="button" class="btn btn-save" onclick="saveProfile()">
+                                <i class="fas fa-save me-2"></i>Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Activity Timeline -->
+                <div class="profile-card mt-4 fade-in-up" style="animation-delay: 0.4s;">
+                    <div class="profile-card-header">
+                        <h5 class="text-white fw-bold mb-0">
+                            <i class="fas fa-history me-2"></i>
+                            Actividad Reciente
+                        </h5>
+                    </div>
+                    <div class="profile-card-body">
+                        <div class="activity-timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-content">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="text-white mb-1">Sesión iniciada</h6>
+                                            <p class="text-white-50 mb-0 small">Acceso desde navegador web</p>
+                                        </div>
+                                        <small class="text-white-50">Hoy</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-content">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="text-white mb-1">Cuenta creada</h6>
+                                            <p class="text-white-50 mb-0 small">Registro completado exitosamente</p>
+                                        </div>
+                                        <small class="text-white-50">{{ usuario.fecha_creacion|timesince }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Account Stats -->
+                <div class="profile-card fade-in-up" style="animation-delay: 0.3s;">
+                    <div class="profile-card-header">
+                        <h5 class="text-white fw-bold mb-0">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Estadísticas
+                        </h5>
+                    </div>
+                    <div class="profile-card-body text-center">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="mb-2">
+                                    <i class="fas fa-calendar-alt fa-2x text-info mb-2"></i>
+                                    <h6 class="text-white fw-bold">{{ usuario.fecha_creacion|timesince }}</h6>
+                                    <small class="text-white-50">Tiempo activo</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-2">
+                                    <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                                    <h6 class="text-white fw-bold">100%</h6>
+                                    <small class="text-white-50">Perfil completo</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-2">
+                                    <i class="fas fa-shield-alt fa-2x text-warning mb-2"></i>
+                                    <h6 class="text-white fw-bold">Alto</h6>
+                                    <small class="text-white-50">Seguridad</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-2">
+                                    <i class="fas fa-star fa-2x text-danger mb-2"></i>
+                                    <h6 class="text-white fw-bold">Premium</h6>
+                                    <small class="text-white-50">Nivel</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="profile-card mt-4 fade-in-up" style="animation-delay: 0.5s;">
+                    <div class="profile-card-header">
+                        <h5 class="text-white fw-bold mb-0">
+                            <i class="fas fa-bolt me-2"></i>
+                            Acciones Rápidas
+                        </h5>
+                    </div>
+                    <div class="profile-card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-edit" onclick="showChangePassword()">
+                                <i class="fas fa-key me-2"></i>Cambiar Contraseña
+                            </button>
+                            <button class="btn btn-edit" onclick="showLoginHistory()">
+                                <i class="fas fa-history me-2"></i>Historial de Accesos
+                            </button>
+                            <button class="btn btn-edit" onclick="downloadData()">
+                                <i class="fas fa-download me-2"></i>Descargar Mis Datos
+                            </button>
+                            <button class="btn btn-danger-outline" onclick="showDeleteAccount()">
+                                <i class="fas fa-user-times me-2"></i>Eliminar Cuenta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Section -->
+        <div class="security-section fade-in-up" style="animation-delay: 0.6s;">
+            <h5 class="text-white fw-bold mb-4">
+                <i class="fas fa-shield-alt me-2"></i>
+                Configuración de Seguridad
+            </h5>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="security-item text-center">
+                        <i class="fas fa-lock fa-2x text-success mb-3"></i>
+                        <h6 class="text-white fw-bold">Contraseña</h6>
+                        <p class="text-white-50 small mb-2">Última actualización: Nunca</p>
+                        <span class="status-badge status-warning">
+                            <i class="fas fa-exclamation-triangle fa-xs"></i>
+                            Recomendado actualizar
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="security-item text-center">
+                        <i class="fas fa-envelope-open-text fa-2x text-info mb-3"></i>
+                        <h6 class="text-white fw-bold">Email Verificado</h6>
+                        <p class="text-white-50 small mb-2">Estado: Verificado</p>
+                        <span class="status-badge status-active">
+                            <i class="fas fa-check fa-xs"></i>
+                            Confirmado
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="security-item text-center">
+                        <i class="fas fa-mobile-alt fa-2x text-warning mb-3"></i>
+                        <h6 class="text-white fw-bold">Autenticación 2FA</h6>
+                        <p class="text-white-50 small mb-2">Estado: No configurado</p>
+                        <span class="status-badge status-inactive">
+                            <i class="fas fa-times fa-xs"></i>
+                            Desactivado
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-key me-2"></i>Cambiar Contraseña
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="changePasswordForm">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Contraseña Actual</label>
+                        <input type="password" class="form-control" id="currentPassword" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Nueva Contraseña</label>
+                        <input type="password" class="form-control" id="newPassword" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Confirmar Nueva Contraseña</label>
+                        <input type="password" class="form-control" id="confirmPassword" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-save" onclick="changePassword()">
+                    <i class="fas fa-save me-2"></i>Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleEditMode() {
+        const viewMode = document.getElementById('viewMode');
+        const editMode = document.getElementById('editMode');
+        
+        if (editMode.style.display === 'none' || editMode.style.display === '') {
+            viewMode.style.display = 'none';
+            editMode.style.display = 'block';
+        } else {
+            viewMode.style.display = 'block';
+            editMode.style.display = 'none';
+        }
+    }
+
+    function cancelEdit() {
+        const viewMode = document.getElementById('viewMode');
+        const editMode = document.getElementById('editMode');
+        
+        viewMode.style.display = 'block';
+        editMode.style.display = 'none';
+        
+        // Reset form values
+        document.getElementById('email').value = '{{ usuario.correo }}';
+    }
+
+    function saveProfile() {
+        const email = document.getElementById('email').value;
+        
+        if (!email || !email.includes('@')) {
+            alert('Por favor ingresa un correo electrónico válido.');
+            return;
+        }
+        
+        // Simular guardado
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Guardando...';
+        btn.disabled = true;
+        
+        setTimeout(() => {
+            alert('✅ Perfil actualizado exitosamente.\n\nEn una aplicación real, esta información se guardaría en la base de datos.');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            
+            // Volver al modo vista
+            toggleEditMode();
+        }, 2000);
+    }
+
+    function showChangePassword() {
+        const modal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+        modal.show();
+    }
+
+    function changePassword() {
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            alert('Por favor completa todos los campos.');
+            return;
+        }
+        
+        if (newPassword !== confirmPassword) {
+            alert('Las contraseñas nuevas no coinciden.');
+            return;
+        }
+        
+        if (newPassword.length < 6) {
+            alert('La nueva contraseña debe tener al menos 6 caracteres.');
+            return;
+        }
+        
+        // Simular cambio de contraseña
+        alert('🔒 Contraseña actualizada exitosamente.\n\nTu cuenta ahora es más segura.');
+        
+        const modal = bootstrap.Modal.getInstance(document.getElementById('changePasswordModal'));
+        modal.hide();
+        
+        // Limpiar formulario
+        document.getElementById('changePasswordForm').reset();
+    }
+
+    function showLoginHistory() {
+        const history = `📊 Historial de Accesos
+
+🕐 Accesos Recientes:
+• Hoy 14:30 - Navegador Chrome (México)
+• Hoy 09:15 - Navegador Chrome (México)
+• Ayer 20:45 - Navegador Firefox (México)
+• Ayer 16:20 - Navegador Chrome (México)
+
+🌍 Ubicaciones:
+• Ciudad de México, México (4 accesos)
+
+🛡️ Seguridad:
+• No se detectaron accesos sospechosos
+• Todas las sesiones son legítimas
+
+(Esta es una versión de demostración)`;
+        
+        alert(history);
+    }
+
+    function downloadData() {
+        const data = `📁 Descarga de Datos Personales
+
+👤 Información de Usuario:
+• Usuario: {{ usuario.usuario }}
+• Email: {{ usuario.correo }}
+• Fecha de registro: {{ usuario.fecha_creacion|date:"d/m/Y H:i" }}
+• Estado: {% if usuario.activo %}Activo{% else %}Inactivo{% endif %}
+
+📊 Estadísticas:
+• Tiempo como miembro: {{ usuario.fecha_creacion|timesince }}
+• Último acceso: Hoy
+• Sesiones totales: 15
+
+🔒 Configuración de Seguridad:
+• Autenticación 2FA: Desactivada
+• Email verificado: Sí
+• Última actualización de contraseña: No registrada
+
+En una aplicación real, esto generaría un archivo descargable con toda tu información.`;
+        
+        alert(data);
+    }
+
+    function showDeleteAccount() {
+        const confirmDelete = confirm(`⚠️ ADVERTENCIA: Eliminar Cuenta
+
+Esta acción NO se puede deshacer. Al eliminar tu cuenta:
+
+❌ Perderás acceso permanente
+❌ Se eliminarán todos tus datos
+❌ No podrás recuperar la información
+❌ El nombre de usuario quedará disponible
+
+¿Estás COMPLETAMENTE seguro de que quieres eliminar tu cuenta?
+
+Esta es una versión de demostración, por lo que no se eliminará realmente.`);
+        
+        if (confirmDelete) {
+            const finalConfirm = confirm(`🚨 CONFIRMACIÓN FINAL
+
+Escribe "ELIMINAR" en el siguiente prompt para confirmar que quieres eliminar permanentemente tu cuenta.
+
+¿Continuar?`);
+            
+            if (finalConfirm) {
+                const confirmation = prompt('Escribe "ELIMINAR" para confirmar:');
+                
+                if (confirmation === 'ELIMINAR') {
+                    alert('❌ En una aplicación real, tu cuenta habría sido eliminada.\n\n(Esta es solo una demostración)');
+                } else {
+                    alert('✅ Eliminación cancelada. Tu cuenta está segura.');
+                }
+            }
+        }
+    }
+
+    // Add some interactive effects
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate profile avatar on hover
+        const avatar = document.querySelector('.profile-avatar');
+        if (avatar) {
+            avatar.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.1) rotate(5deg)';
+            });
+            
+            avatar.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1) rotate(0deg)';
+            });
+        }
+
+        // Add ripple effect to buttons
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                ripple.style.position = 'absolute';
+                ripple.style.borderRadius = '50%';
+                ripple.style.background = 'rgba(255,255,255,0.3)';
+                ripple.style.transform = 'scale(0)';
+                ripple.style.animation = 'ripple 0.6s linear';
+                ripple.style.left = (e.offsetX - 10) + 'px';
+                ripple.style.top = (e.offsetY - 10) + 'px';
+                ripple.style.width = ripple.style.height = '20px';
+                
+                this.style.position = 'relative';
+                this.style.overflow = 'hidden';
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+    });
+
+    // Add ripple animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+{% endblock %}
